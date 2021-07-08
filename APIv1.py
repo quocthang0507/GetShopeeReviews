@@ -1,6 +1,7 @@
 import urllib.request
 import json
 import time
+import re
 
 
 def get_json_product(itemid, limit, offset, shopid):
@@ -17,6 +18,34 @@ def get_json_recommend(limit, offset):
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
     return data
+
+# https://www.geeksforgeeks.org/remove-consecutive-duplicates-string/
+
+
+def remove_adjacent_duplicates(str):
+    str = list(str)
+    n = len(str)
+    if (n < 2):
+        return
+    j = 0
+    for i in range(n):
+        if (str[j] != str[i]):
+            j += 1
+            str[j] = str[i]
+    j += 1
+    str = str[:j]
+    return ''.join(str)
+
+
+def format_string(str):
+    vietnamese_chars = '!;, .ABCDEGHIKLMNOPQRSTUVXYabcdeghiklmnopqrstuvxyÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
+    str = str.replace('\n', ' ')  # Replace new line character
+    str = str.replace('\t', ' ')  # Replace tab character
+    # Keep only specific characters
+    str = ''.join(c for c in str if c in vietnamese_chars)
+    str = remove_adjacent_duplicates(str)
+    str = str.strip('. ')  # Remove the leading and trailing characters
+    return str
 
 
 def get_ratings_from_json(json_data, allow_null=True):
@@ -35,7 +64,7 @@ def get_ratings_from_json(json_data, allow_null=True):
                         'itemid': itemid,
                         'shopid': shopid,
                         'rating_star': rating_star,
-                        'comment': comment
+                        'comment': format_string(comment)
                     })
     return result
 
@@ -93,13 +122,15 @@ def get_all_products(max_products=100, limit=10, offset=0):
         limit = max_products
     while True:
         start_time = time.time()
+        # Notes: The number of products may be smaller than limit number although max_products < limit
+        # So the number of result can be larger than the max_products
         json_data = get_json_recommend(limit, offset)
         products = get_products_from_json(json_data)
         if products == [] or len(result) >= max_products:
             break
         else:
             result += products
-            print('Đã thu thập sản phẩm thứ {} trên tổng số {} sản phẩm. Mất {} mili giây'.format(
+            print('Đã lấy về {} sản phẩm trên tổng số tối đa {} sản phẩm. Mất {:0.2f} mili giây'.format(
                 len(result), max_products, (time.time() - start_time)*1000))
         offset += limit
     return result
@@ -108,10 +139,10 @@ def get_all_products(max_products=100, limit=10, offset=0):
 def export_to_text_file(array_of_json, filename, only_header=False):
     f = open(filename, 'a+', encoding='utf-8')
     if only_header:
-        f.write('shopid\titemid\trating_star\tcomment\r\n')
+        f.write('shopid\titemid\trating_star\tcomment\n')
     else:
         for j in array_of_json:
-            f.write('{}\t{}\t{}\t{}\r\n'.format(
+            f.write('{}\t{}\t{}\t{}\n'.format(
                 j['shopid'], j['itemid'], j['rating_star'], j['comment']))
     f.close()
 
@@ -127,10 +158,10 @@ def collect_reviews_product(max_products, allow_null=False):
         ratings = get_all_ratings(itemid, shopid, allow_null=allow_null)
         length_products -= 1
         export_to_text_file(ratings, 'sentiments.txt')
-        print('Đã thu thập và ghi {} đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {} mili giây'.format(
+        print('Đã thu thập và ghi {} đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {:0.2f} mili giây'.format(
             len(ratings), itemid, shopid, length_products, (time.time() - start_time)*1000))
 
 
 if __name__ == '__main__':
     # print(get_all_ratings(9154894255, 36333676))
-    collect_reviews_product(2)
+    collect_reviews_product(4)
