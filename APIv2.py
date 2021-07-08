@@ -1,5 +1,6 @@
 import urllib.request
 import json
+import time
 
 
 def get_json_product(itemid, limit, offset, shopid):
@@ -73,11 +74,11 @@ def get_products_from_json(json_data, get_top_product=False):
     return result
 
 
-def get_all_ratings(itemid, shopid, limit=6, offset=0):
+def get_all_ratings(itemid, shopid, limit=6, offset=0, allow_null=False):
     result = []
     while True:
         json_data = get_json_product(itemid, limit, offset, shopid)
-        ratings = get_ratings_from_json(json_data)
+        ratings = get_ratings_from_json(json_data, allow_null)
         if ratings == []:
             break
         else:
@@ -88,17 +89,47 @@ def get_all_ratings(itemid, shopid, limit=6, offset=0):
 
 def get_all_products(max=100, limit=10, offset=0):
     result = []
+    if max < limit:
+        limit = max
     while True:
+        start_time = time.time()
         json_data = get_json_recommend(limit, offset)
         products = get_products_from_json(json_data)
-        if products == [] or len(result) == max:
+        if products == [] or len(result) >= max:
             break
         else:
             result += products
+            print('Đã thu thập sản phẩm thứ {} trên tổng số {} sản phẩm. Mất {} mili giây'.format(
+                len(result), max, (time.time() - start_time)*1000))
         offset += limit
     return result
 
 
+def export_to_text_file(array_of_json, filename, only_header=False):
+    f = open(filename, 'a+', encoding='utf-8')
+    if only_header:
+        f.write('shopid\titemid\trating_star\tcomment\r\n')
+    else:
+        for j in array_of_json:
+            f.write('{}\t{}\t{}\t{}\r\n'.format(
+                j['shopid'], j['itemid'], j['rating_star'], j['comment']))
+    f.close()
+
+
+def collect_reviews_product(max, allow_null=False):
+    products = get_all_products(max)
+    export_to_text_file(None, 'sentiments.txt', True)
+    for p in products:
+        start_time = time.time()
+        itemid = p['itemid']
+        shopid = p['shopid']
+        ratings = get_all_ratings(itemid, shopid, allow_null=allow_null)
+        max -= 1
+        export_to_text_file(ratings, 'sentiments.txt')
+        print('Đã thu thập {} và ghi đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {} mili giây'.format(
+            len(ratings), itemid, shopid, max, (time.time() - start_time)*1000))
+
+
 if __name__ == '__main__':
     # print(get_all_ratings(9154894255, 36333676))
-    print(get_all_products())
+    collect_reviews_product(2)
