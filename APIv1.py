@@ -118,16 +118,17 @@ def export_to_text_file(array_of_json, filename, only_header=False):
 
 def collect_reviews_product(max_products, allow_null=False):
     products = get_all_products(max_products)
+    length_products = len(products)
     export_to_text_file(None, 'sentiments.txt', True)
     for p in products:
         start_time = time.time()
         itemid = p['itemid']
         shopid = p['shopid']
         ratings = get_all_ratings(itemid, shopid, allow_null=allow_null)
-        max_products -= 1
+        length_products -= 1
         export_to_text_file(ratings, 'sentiments.txt')
         print('Đã thu thập {} và ghi đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {} mili giây'.format(
-            len(ratings), itemid, shopid, max_products, (time.time() - start_time)*1000))
+            len(ratings), itemid, shopid, length_products, (time.time() - start_time)*1000))
 
 
 if __name__ == '__main__':
