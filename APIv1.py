@@ -1,8 +1,9 @@
 import urllib.request
 import json
+import datetime
 import time
 import re
-import string
+
 
 def get_json_product(itemid, limit, offset, shopid):
     url = 'https://shopee.vn/api/v2/item/get_ratings?filter=0&flag=1&itemid={}&limit={}&offset={}&shopid={}&type=0'.format(
@@ -26,12 +27,14 @@ def remove_adjacent_duplicates(str):
 
 def format_string(str):
     if str:
-        vietnamese_chars = '!;, .ABCDEGHIKLMNOPQRSTUVXYabcdeghiklmnopqrstuvxyÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
-        str = str.replace('\n', ' ')  # Replace new line character
-        str = str.replace('\t', ' ')  # Replace tab character
-        str = ''.join(c for c in str if c in vietnamese_chars)  # Keep only specific characters
+        vietnamese_chars = ' ,.\n\tABCDEGHIKLMNOPQRSTUVXYabcdeghiklmnopqrstuvxyÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
+        bad_chars = [('\t', ', '), ('\n', '. '), ('  ', ' '),
+                     (' .', '.'), (' ,', ','), ]
+        # Keep only specific characters
+        str = ''.join(c for c in str if c in vietnamese_chars)
         str = remove_adjacent_duplicates(str)
-        str = str.translate(str.maketrans('', '', string.punctuation))  # remove all punctuations
+        for c in bad_chars:
+            str = str.replace(c[0], c[1])
         str = str.strip()
     return str
 
@@ -44,6 +47,10 @@ def get_ratings_from_json(json_data, min_len_str=4):
         for r in ratings:
             itemid = r['itemid']
             shopid = r['shopid']
+            userid = r['userid']
+            cmtid = r['cmtid']
+            mtime = datetime.datetime.fromtimestamp(
+                r['mtime']).strftime('%d-%m-%Y %H:%M:%S')
             rating_star = r['rating_star']
             comment = format_string(r['comment'])
             if len(comment) >= min_len_str:
@@ -51,6 +58,9 @@ def get_ratings_from_json(json_data, min_len_str=4):
                     {
                         'itemid': itemid,
                         'shopid': shopid,
+                        'userid': userid,
+                        'cmtid': cmtid,
+                        'mtime': mtime,
                         'rating_star': rating_star,
                         'comment': format_string(comment)
                     })
@@ -127,11 +137,11 @@ def get_all_products(max_products=100, limit=10, offset=0):
 def export_to_text_file(array_of_json, filename, only_header=False):
     f = open(filename, 'a+', encoding='utf-8')
     if only_header:
-        f.write('rating_star\tcomment\n')
+        f.write('userid\tmtime\trating_star\tcomment\n')
     else:
         for j in array_of_json:
-            f.write('{}\t{}\n'.format(
-                j['rating_star'], j['comment']))
+            f.write('{}\t{}\t{}\t{}\n'.format(
+                j['userid'], j['mtime'], j['rating_star'], j['comment']))
     f.close()
 
 
