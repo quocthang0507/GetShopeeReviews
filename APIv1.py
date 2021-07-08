@@ -127,7 +127,7 @@ def collect_reviews_product(max_products, allow_null=False):
         ratings = get_all_ratings(itemid, shopid, allow_null=allow_null)
         length_products -= 1
         export_to_text_file(ratings, 'sentiments.txt')
-        print('Đã thu thập {} và ghi đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {} mili giây'.format(
+        print('Đã thu thập và ghi {} đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {} mili giây'.format(
             len(ratings), itemid, shopid, length_products, (time.time() - start_time)*1000))
 
 
