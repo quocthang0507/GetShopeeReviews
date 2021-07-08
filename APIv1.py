@@ -87,20 +87,20 @@ def get_all_ratings(itemid, shopid, limit=6, offset=0, allow_null=False):
     return result
 
 
-def get_all_products(max=100, limit=10, offset=0):
+def get_all_products(max_products=100, limit=10, offset=0):
     result = []
-    if max < limit:
-        limit = max
+    if max_products < limit:
+        limit = max_products
     while True:
         start_time = time.time()
         json_data = get_json_recommend(limit, offset)
         products = get_products_from_json(json_data)
-        if products == [] or len(result) >= max:
+        if products == [] or len(result) >= max_products:
             break
         else:
             result += products
             print('Đã thu thập sản phẩm thứ {} trên tổng số {} sản phẩm. Mất {} mili giây'.format(
-                len(result), max, (time.time() - start_time)*1000))
+                len(result), max_products, (time.time() - start_time)*1000))
         offset += limit
     return result
 
@@ -116,18 +116,18 @@ def export_to_text_file(array_of_json, filename, only_header=False):
     f.close()
 
 
-def collect_reviews_product(max, allow_null=False):
-    products = get_all_products(max)
+def collect_reviews_product(max_products, allow_null=False):
+    products = get_all_products(max_products)
     export_to_text_file(None, 'sentiments.txt', True)
     for p in products:
         start_time = time.time()
         itemid = p['itemid']
         shopid = p['shopid']
         ratings = get_all_ratings(itemid, shopid, allow_null=allow_null)
-        max -= 1
+        max_products -= 1
         export_to_text_file(ratings, 'sentiments.txt')
         print('Đã thu thập {} và ghi đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {} mili giây'.format(
-            len(ratings), itemid, shopid, max, (time.time() - start_time)*1000))
+            len(ratings), itemid, shopid, max_products, (time.time() - start_time)*1000))
 
 
 if __name__ == '__main__':
