@@ -58,7 +58,7 @@ def get_ratings_from_json(json_data, allow_null=True):
             shopid = r['shopid']
             rating_star = r['rating_star']
             comment = r['comment']
-            if comment != '' or (comment == '' and allow_null):
+            if comment != None and (comment != '' or (comment == '' and allow_null)):
                 result.append(
                     {
                         'itemid': itemid,
