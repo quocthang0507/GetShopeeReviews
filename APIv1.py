@@ -62,7 +62,7 @@ def get_ratings_from_json(json_data, min_len_str=4):
                         'cmtid': cmtid,
                         'mtime': mtime,
                         'rating_star': rating_star,
-                        'comment': format_string(comment)
+                        'comment': comment
                     })
     return result
 
@@ -101,11 +101,11 @@ def get_products_from_json(json_data, get_top_product=False):
     return result
 
 
-def get_all_ratings(itemid, shopid, limit=6, offset=0, min_len_str=4):
+def get_all_ratings(itemid, shopid, limit=6, offset=0, min_len_cmt=4):
     result = []
     while True:
         json_data = get_json_product(itemid, limit, offset, shopid)
-        ratings = get_ratings_from_json(json_data, min_len_str)
+        ratings = get_ratings_from_json(json_data, min_len_cmt)
         if ratings == []:
             break
         else:
@@ -114,7 +114,7 @@ def get_all_ratings(itemid, shopid, limit=6, offset=0, min_len_str=4):
     return result
 
 
-def get_all_products(max_products=100, limit=10, offset=0):
+def get_all_products(max_products=100, limit=10, offset=0, get_top_product=False):
     result = []
     if max_products < limit:
         limit = max_products
@@ -123,7 +123,7 @@ def get_all_products(max_products=100, limit=10, offset=0):
         # Notes: The number of products may be smaller than limit number although max_products < limit
         # So the number of result can be larger than the max_products
         json_data = get_json_recommend(limit, offset)
-        products = get_products_from_json(json_data)
+        products = get_products_from_json(json_data, get_top_product)
         if products == [] or len(result) >= max_products:
             break
         else:
@@ -145,15 +145,16 @@ def export_to_text_file(array_of_json, filename, only_header=False):
     f.close()
 
 
-def collect_reviews_product(max_products, min_len_str=4):
-    products = get_all_products(max_products)
+def collect_reviews_product(max_products, min_len_cmt=4):
+    products = get_all_products(
+        max_products=max_products, get_top_product=True)
     length_products = len(products)
     export_to_text_file(None, 'sentiments.txt', True)
     for p in products:
         start_time = time.time()
         itemid = p['itemid']
         shopid = p['shopid']
-        ratings = get_all_ratings(itemid, shopid, min_len_str=min_len_str)
+        ratings = get_all_ratings(itemid, shopid, min_len_cmt=min_len_cmt)
         length_products -= 1
         export_to_text_file(ratings, 'sentiments.txt')
         print('Đã thu thập và ghi {} đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {:0.2f} mili giây'.format(
@@ -161,5 +162,4 @@ def collect_reviews_product(max_products, min_len_str=4):
 
 
 if __name__ == '__main__':
-    # print(get_all_ratings(9154894255, 36333676))
-    collect_reviews_product(5)
+    collect_reviews_product(1000)
