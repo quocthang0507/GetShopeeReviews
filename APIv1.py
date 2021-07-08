@@ -28,8 +28,8 @@ def remove_adjacent_duplicates(str):
 def format_string(str):
     if str:
         vietnamese_chars = ' ,.\n\tABCDEGHIKLMNOPQRSTUVXYabcdeghiklmnopqrstuvxyÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
-        bad_chars = [('\t', ', '), ('\n', '. '), ('  ', ' '),
-                     (' .', '.'), (' ,', ','), ]
+        bad_chars = [('\t', ', '), ('\n', '. '), ('  ', ' '), (' .', '.'),
+                     (' ,', ','), ('..', '.'), (',,', ','), (',.', '.'), ('.,', ',')]
         # Keep only specific characters
         str = ''.join(c for c in str if c in vietnamese_chars)
         str = remove_adjacent_duplicates(str)
