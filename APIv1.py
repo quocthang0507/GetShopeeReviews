@@ -53,7 +53,7 @@ def get_ratings_from_json(json_data, min_len_str=4):
                 r['mtime']).strftime('%d-%m-%Y %H:%M:%S')
             rating_star = r['rating_star']
             comment = format_string(r['comment'])
-            if len(comment) >= min_len_str:
+            if comment != None and len(comment) >= min_len_str:
                 result.append(
                     {
                         'itemid': itemid,
