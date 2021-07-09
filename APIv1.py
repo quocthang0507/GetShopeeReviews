@@ -5,9 +5,13 @@ import time
 import re
 
 
-def get_json_product(itemid, limit, offset, shopid):
-    url = 'https://shopee.vn/api/v2/item/get_ratings?filter=0&flag=1&itemid={}&limit={}&offset={}&shopid={}&type=0'.format(
-        itemid, limit, offset, shopid)
+def get_json_product(itemid, limit, offset, shopid, type=0):
+    '''Get JSON of a product
+    * type = 0: get all ratings
+    * type = 1..5: get ratings based on rating stars
+    '''
+    url = 'https://shopee.vn/api/v2/item/get_ratings?filter=0&flag=1&itemid={}&limit={}&offset={}&shopid={}&type={}'.format(
+        itemid, limit, offset, shopid, type)
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
     return data
@@ -102,10 +106,10 @@ def get_products_from_json(json_data, get_top_product=False):
     return result
 
 
-def get_all_ratings(itemid, shopid, limit=6, offset=0, min_len_cmt=4):
+def get_all_ratings(itemid, shopid, limit=6, offset=0, min_len_cmt=4, type=0):
     result = []
     while True:
-        json_data = get_json_product(itemid, limit, offset, shopid)
+        json_data = get_json_product(itemid, limit, offset, shopid, type)
         ratings = get_ratings_from_json(json_data, min_len_cmt)
         if ratings == []:
             break
@@ -146,7 +150,11 @@ def export_to_text_file(array_of_json, filename, only_header=False):
     f.close()
 
 
-def collect_reviews_product(filename, max_products, min_len_cmt=4):
+def collect_reviews_product(filename, max_products, min_len_cmt=4, types=[0]):
+    '''Collect all reviews of products with specific rating_star
+    * type = 0: get all rating_stars
+    * type = array [1..5]: get only these rating_stars
+    '''
     products = get_all_products(
         max_products=max_products, get_top_product=True)
     length_products = len(products)
@@ -155,12 +163,18 @@ def collect_reviews_product(filename, max_products, min_len_cmt=4):
         start_time = time.time()
         itemid = p['itemid']
         shopid = p['shopid']
-        ratings = get_all_ratings(itemid, shopid, min_len_cmt=min_len_cmt)
+        if types != None and types != []:
+            for t in types:
+                ratings = get_all_ratings(
+                    itemid, shopid, min_len_cmt=min_len_cmt, type=t)
+                export_to_text_file(ratings, filename)
+        else:
+            ratings = get_all_ratings(itemid, shopid, min_len_cmt=min_len_cmt)
+            export_to_text_file(ratings, filename)
         length_products -= 1
-        export_to_text_file(ratings, 'sentiments.txt')
         print('Đã thu thập và ghi {} đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {:0.2f} mili giây'.format(
             len(ratings), itemid, shopid, length_products, (time.time() - start_time)*1000))
 
 
 if __name__ == '__main__':
-    collect_reviews_product('sentiments.txt', 2000)
+    collect_reviews_product('sentiments.txt', 2000, types=[1, 2])
