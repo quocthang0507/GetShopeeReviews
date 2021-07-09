@@ -85,19 +85,20 @@ def get_products_from_json(json_data, get_top_product=False):
                     })
         if get_top_product:
             top_product = data['top_product']
-            for t in top_product:
-                list = t['list']
-                data = list['data']
-                item_lite = data['item_lite']
-                if item_lite != None:
-                    for i in item_lite:
-                        shopid = i['shopid']
-                        itemid = i['itemid']
-                        result.append(
-                            {
-                                'shopid': shopid,
-                                'itemid': itemid
-                            })
+            if top_product != None:
+                for t in top_product:
+                    list = t['list']
+                    data = list['data']
+                    item_lite = data['item_lite']
+                    if item_lite != None:
+                        for i in item_lite:
+                            shopid = i['shopid']
+                            itemid = i['itemid']
+                            result.append(
+                                {
+                                    'shopid': shopid,
+                                    'itemid': itemid
+                                })
     return result
 
 
@@ -145,11 +146,11 @@ def export_to_text_file(array_of_json, filename, only_header=False):
     f.close()
 
 
-def collect_reviews_product(max_products, min_len_cmt=4):
+def collect_reviews_product(filename, max_products, min_len_cmt=4):
     products = get_all_products(
         max_products=max_products, get_top_product=True)
     length_products = len(products)
-    export_to_text_file(None, 'sentiments.txt', True)
+    export_to_text_file(None, filename, True)
     for p in products:
         start_time = time.time()
         itemid = p['itemid']
@@ -162,4 +163,4 @@ def collect_reviews_product(max_products, min_len_cmt=4):
 
 
 if __name__ == '__main__':
-    collect_reviews_product(1000)
+    collect_reviews_product('sentiments.txt', 2000)
