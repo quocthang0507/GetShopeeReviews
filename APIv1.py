@@ -3,23 +3,37 @@ import json
 import datetime
 import time
 import re
+import pandas as pd
 
 
-def get_json_product(itemid, limit, offset, shopid, type=0):
+def get_json_product(itemid, limit, offset, shopid, type=0, locale='vi'):
     '''Get JSON of a product
     * type = 0: get all ratings
     * type = 1..5: get ratings based on rating stars
+    * locale = 'vi' or 'sg'
     '''
-    url = 'https://shopee.vn/api/v2/item/get_ratings?filter=0&flag=1&itemid={}&limit={}&offset={}&shopid={}&type={}'.format(
-        itemid, limit, offset, shopid, type)
+    if locale == 'vi':
+        url = 'https://shopee.vn/api/v2/item/get_ratings?filter=0&flag=1&itemid={}&limit={}&offset={}&shopid={}&type={}'.format(
+            itemid, limit, offset, shopid, type)
+    elif locale == 'sg':
+        url = 'https://shopee.sg/api/v2/item/get_ratings?filter=0&flag=1&itemid={}&limit={}&offset={}&shopid={}&type={}'.format(
+            itemid, limit, offset, shopid, type)
+    else:
+        return None
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
     return data
 
 
-def get_json_recommend(limit, offset):
-    url = 'https://shopee.vn/api/v4/recommend/recommend?bundle=daily_discover_main&limit={}&offset={}'.format(
-        limit, offset)
+def get_json_recommend(limit, offset, locale='vi'):
+    if locale == 'vi':
+        url = 'https://shopee.vn/api/v4/recommend/recommend?bundle=daily_discover_main&limit={}&offset={}'.format(
+            limit, offset)
+    elif locale == 'sg':
+        url = 'https://shopee.sg/api/v4/recommend/recommend?bundle=daily_discover_main&limit={}&offset={}'.format(
+            limit, offset)
+    else:
+        return None
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
     return data
@@ -37,13 +51,16 @@ def remove_adjacent_duplicates(str):
     return re.sub(r'(.)\1+', r'\1\1', str)
 
 
-def format_string(str):
+def format_string(str, locale='vi'):
     if str:
-        vietnamese_chars = ' ,.\n\tABCDEGHIKLMNOPQRSTUVXYabcdeghiklmnopqrstuvxyÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
+        if locale == 'vi':
+            locale_chars = ' ,.\n\tABCDEGHIKLMNOPQRSTUVXYabcdeghiklmnopqrstuvxyÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
+        elif locale == 'sg':
+            locale_chars = ' ,.\n\tABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
         bad_chars = [('\t', ', '), ('\n', '. '), ('  ', ' '), (' .', '.'),
                      (' ,', ','), ('..', '.'), (',,', ','), (',.', '.'), ('.,', ',')]
         # Keep only specific characters
-        str = ''.join(c for c in str if c in vietnamese_chars)
+        str = ''.join(c for c in str if c in locale_chars)
         str = remove_adjacent_duplicates(str)
         for c in bad_chars:
             str = str.replace(c[0], c[1])
@@ -53,7 +70,7 @@ def format_string(str):
 
 def get_ratings_from_json(json_data, min_len_str=4):
     data = json_data['data']
-    ratings = data['ratings']
+    ratings = data['ratings'] if data != None else None
     result = []
     if ratings != None:
         for r in ratings:
@@ -81,7 +98,7 @@ def get_ratings_from_json(json_data, min_len_str=4):
 
 def get_products_from_json(json_data, get_top_product=False):
     data = json_data['data']
-    sections = data['sections']
+    sections = data['sections'] if data != None else []
     result = []
     for s in sections:
         data = s['data']
@@ -170,11 +187,11 @@ def get_all_campaign_products(label, max_products=100, limit=10, offset=0):
 def export_to_text_file(array_of_json, filename, only_header=False):
     f = open(filename, 'a+', encoding='utf-8')
     if only_header:
-        f.write('userid\tmtime\trating_star\tcomment\n')
+        f.write('userid\tcmtid\tmtime\trating_star\tcomment\n')
     else:
         for j in array_of_json:
             f.write('{}\t{}\t{}\t{}\n'.format(
-                j['userid'], j['mtime'], j['rating_star'], j['comment']))
+                j['userid'], j['cmtid'], j['mtime'], j['rating_star'], j['comment']))
     f.close()
 
 
@@ -205,5 +222,11 @@ def collect_reviews_product(filename, max_products, min_len_cmt=4, types=[0]):
             len(ratings), itemid, shopid, length_products, (time.time() - start_time)*1000))
 
 
+def remove_duplicate_column(filename, col_check):
+    df = pd.read_csv(filename, delimiter='\t')
+    df.drop_duplicates(col_check, inplace=True)
+
+
 if __name__ == '__main__':
     collect_reviews_product('sentiments.txt', 100, types=[1, 2, 3])
+    # remove_duplicate_column('sentiments_v4.txt', 'comment')
