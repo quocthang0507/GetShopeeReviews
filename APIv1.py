@@ -25,6 +25,14 @@ def get_json_recommend(limit, offset):
     return data
 
 
+def get_json_campaign(label, limit, offset):
+    url = 'https://shopee.vn/api/v4/recommend/recommend?bundle=daily_discover_campaign&label={}&limit={}&offset={}'.format(
+        label, limit, offset)
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read())
+    return data
+
+
 def remove_adjacent_duplicates(str):
     return re.sub(r'(.)\1+', r'\1\1', str)
 
@@ -119,7 +127,7 @@ def get_all_ratings(itemid, shopid, limit=6, offset=0, min_len_cmt=4, type=0):
     return result
 
 
-def get_all_products(max_products=100, limit=10, offset=0, get_top_product=False):
+def get_all_recommended_products(max_products=100, limit=10, offset=0, get_top_product=False):
     result = []
     if max_products < limit:
         limit = max_products
@@ -129,6 +137,26 @@ def get_all_products(max_products=100, limit=10, offset=0, get_top_product=False
         # So the number of result can be larger than the max_products
         json_data = get_json_recommend(limit, offset)
         products = get_products_from_json(json_data, get_top_product)
+        if products == [] or len(result) >= max_products:
+            break
+        else:
+            result += products
+            print('Đã lấy về {} sản phẩm trên tổng số tối đa {} sản phẩm. Mất {:0.2f} mili giây'.format(
+                len(result), max_products, (time.time() - start_time)*1000))
+        offset += limit
+    return result
+
+
+def get_all_campaign_products(label, max_products=100, limit=10, offset=0):
+    result = []
+    if max_products < limit:
+        limit = max_products
+    while True:
+        start_time = time.time()
+        # Notes: The number of products may be smaller than limit number although max_products < limit
+        # So the number of result can be larger than the max_products
+        json_data = get_json_campaign(label, limit, offset)
+        products = get_products_from_json(json_data, False)
         if products == [] or len(result) >= max_products:
             break
         else:
@@ -152,29 +180,30 @@ def export_to_text_file(array_of_json, filename, only_header=False):
 
 def collect_reviews_product(filename, max_products, min_len_cmt=4, types=[0]):
     '''Collect all reviews of products with specific rating_star
-    * type = 0: get all rating_stars
+    * type = array [0]: get all rating_stars
     * type = array [1..5]: get only these rating_stars
     '''
-    products = get_all_products(
-        max_products=max_products, get_top_product=True)
+    # products = get_all_recommended_products(
+    #     max_products=max_products, get_top_product=True)
+    products = get_all_campaign_products(1005922, max_products)
     length_products = len(products)
     export_to_text_file(None, filename, True)
     for p in products:
         start_time = time.time()
         itemid = p['itemid']
         shopid = p['shopid']
+        ratings = []
         if types != None and types != []:
             for t in types:
-                ratings = get_all_ratings(
+                ratings += get_all_ratings(
                     itemid, shopid, min_len_cmt=min_len_cmt, type=t)
-                export_to_text_file(ratings, filename)
         else:
-            ratings = get_all_ratings(itemid, shopid, min_len_cmt=min_len_cmt)
-            export_to_text_file(ratings, filename)
+            ratings += get_all_ratings(itemid, shopid, min_len_cmt=min_len_cmt)
+        export_to_text_file(ratings, filename)
         length_products -= 1
         print('Đã thu thập và ghi {} đánh giá của sản phẩm {} tại shop {}. Còn {} sản phẩm nữa. Mất {:0.2f} mili giây'.format(
             len(ratings), itemid, shopid, length_products, (time.time() - start_time)*1000))
 
 
 if __name__ == '__main__':
-    collect_reviews_product('sentiments.txt', 2000, types=[1, 2])
+    collect_reviews_product('sentiments.txt', 100, types=[1, 2, 3])
