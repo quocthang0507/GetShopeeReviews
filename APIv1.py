@@ -5,14 +5,14 @@ import time
 import re
 import pandas as pd
 
-country_code = 'vi'
+country_code = 'vn'
 
 
 def get_json_product(itemid, limit, offset, shopid, type=0):
     '''Get JSON of a product
     * type = 0: get all ratings
     * type = 1..5: get ratings based on rating stars
-    * locale = 'vi' or 'sg'
+    * country_code = 'vn' or 'sg'
     '''
     url = 'https://shopee.{}/api/v2/item/get_ratings?filter=0&flag=1&itemid={}&limit={}&offset={}&shopid={}&type={}'.format(
         country_code, itemid, limit, offset, shopid, type)
@@ -44,7 +44,7 @@ def remove_adjacent_duplicates(str):
 def format_string(str):
     if str:
         locale_chars = ''
-        if country_code == 'vi':
+        if country_code == 'vn':
             locale_chars = ' ,.\n\tABCDEGHIKLMNOPQRSTUVXYabcdeghiklmnopqrstuvxyÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
         elif country_code == 'sg':
             locale_chars = ' ,.\n\tABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
