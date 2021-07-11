@@ -181,7 +181,7 @@ def export_to_text_file(array_of_json, filename, only_header=False):
         f.write('userid\tcmtid\tmtime\trating_star\tcomment\n')
     else:
         for j in array_of_json:
-            f.write('{}\t{}\t{}\t{}\n'.format(
+            f.write('{}\t{}\t{}\t{}\t{}\n'.format(
                 j['userid'], j['cmtid'], j['mtime'], j['rating_star'], j['comment']))
     f.close()
 
@@ -191,9 +191,9 @@ def collect_reviews_product(filename, max_products, min_len_cmt=4, types=[0]):
     * type = array [0]: get all rating_stars
     * type = array [1..5]: get only these rating_stars
     '''
-    # products = get_all_recommended_products(
-    #     max_products=max_products, get_top_product=True)
-    products = get_all_campaign_products(1005922, max_products)
+    products = get_all_recommended_products(
+        max_products=max_products, get_top_product=True)
+    # products = get_all_campaign_products(1005922, max_products)
     length_products = len(products)
     export_to_text_file(None, filename, True)
     for p in products:
@@ -216,8 +216,9 @@ def collect_reviews_product(filename, max_products, min_len_cmt=4, types=[0]):
 def remove_duplicate_column(filename, col_check):
     df = pd.read_csv(filename, delimiter='\t')
     df.drop_duplicates(col_check, inplace=True)
+    print(df['rating_star'].value_counts(ascending=True))
 
 
 if __name__ == '__main__':
-    collect_reviews_product('sentiments.txt', 100, types=[1, 2, 3])
-    # remove_duplicate_column('sentiments_v4.txt', 'comment')
+    # collect_reviews_product('sentiments.txt', 100, types=[1, 2, 3, 4])
+    remove_duplicate_column('sentiments_v5.txt', 'comment')
