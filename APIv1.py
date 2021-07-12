@@ -215,8 +215,10 @@ def collect_reviews_product(filename, max_products, min_len_cmt=4, types=[0]):
 
 def remove_duplicate_column(filename, col_check):
     df = pd.read_csv(filename, delimiter='\t')
+    print(df['rating_star'].value_counts().sort_index(ascending=True))
     df.drop_duplicates(col_check, inplace=True)
-    print(df['rating_star'].value_counts(ascending=True))
+    print(df['rating_star'].value_counts().sort_index(ascending=True))
+    df.to_csv(filename, sep='\t', index = False)
 
 
 if __name__ == '__main__':

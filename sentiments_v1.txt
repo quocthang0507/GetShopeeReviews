@@ -139,7 +139,6 @@ userid	mtime	rating_star	comment
 442335795	13-06-2021 15:08:30	5	Siêu xinh luôn ạ
 250337165	18-04-2021 20:25:03	5	Chỉ giao sai màu tóc mái còn lại mọi thứ ok đáng mua.
 365249348	16-04-2021 13:01:27	5	Shop uy tín
-365249348	16-04-2021 13:02:39	5	Shop uy tín
 362991180	08-04-2021 21:31:29	5	Hàng như hình, hàng ổn, dùng tạm được, shop rep tin nhắn chậm, shipper giao hàng lâu, ko gọi đt cho khách hàng, Okok
 83565103	09-04-2021 17:46:29	5	Xinhh
 16950203	04-04-2021 18:19:23	5	Dùng quá ok lun.
@@ -317,7 +316,6 @@ userid	mtime	rating_star	comment
 200557205	05-11-2020 22:06:03	1	Tư vấn qua loa khách cho số đo rõ ràng nhưng gửi hàng cho khách áo rất ngắn đã v còn gửi sai màu khách đặt
 52422366	17-09-2020 11:02:25	3	Sie k đúng ngư quảng cáo, nhỏ hơn qc nhiều, nên trừ đi tầm kg so với qc
 110698950	05-11-2020 23:14:13	1	Shop lừa đặt xl giao xxl. Ib thì tl vớ vẩn. Không baoh mua shop này nữa.
-45398945	17-05-2020 06:05:05	5	Goodd
 265926854	16-10-2020 12:40:31	5	Chất vải rất tốt. Áo đẹp
 242879225	27-06-2020 21:24:13	5	Mshhsgsghshshhshhshhshshshssuvunrbhrhdncdbehxhdhevsbhxush
 32708502	28-05-2020 10:38:40	1	Đặt kiểu giao kiểu khác, vải xấu. Tệ
