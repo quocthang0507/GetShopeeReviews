@@ -169,8 +169,8 @@ def get_all_campaign_products(label, max_products=100, limit=10, offset=0):
             break
         else:
             result += products
-            print('Đã lấy về {} sản phẩm trên tổng số tối đa {} sản phẩm. Mất {:0.2f} mili giây'.format(
-                len(result), max_products, (time.time() - start_time)*1000))
+            print('Đã lấy về {} sản phẩm trên tổng số {} sản phẩm, tối đa {} sản phẩm. Mất {:0.2f} mili giây'.format(
+                len(products), len(result), max_products, (time.time() - start_time)*1000))
         offset += limit
     return result
 
@@ -218,7 +218,7 @@ def remove_duplicate_column(filename, col_check):
     print(df['rating_star'].value_counts().sort_index(ascending=True))
     df.drop_duplicates(col_check, inplace=True)
     print(df['rating_star'].value_counts().sort_index(ascending=True))
-    df.to_csv(filename, sep='\t', index = False)
+    df.to_csv(filename, sep='\t', index=False)
 
 
 if __name__ == '__main__':
