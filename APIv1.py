@@ -221,6 +221,19 @@ def remove_duplicate_column(filename, col_check):
     df.to_csv(filename, sep='\t', index=False)
 
 
+def prune(filename):
+    df = pd.read_csv(filename, delimiter='\t')
+    min = df.groupby('rating_star').agg('count')['comment'].min()
+    for i in [1, 2, 3, 4, 5]:
+        rows = df.loc[df['rating_star'] == i]
+        rows = rows.sort_values(
+            by='comment', key=lambda x: x.str.len(), ascending=False)
+        rows = rows.head(min)
+        header = True if i == 1 else False
+        rows.to_csv('pruned_' + filename, mode='a',
+                    index=False, sep='\t', header=header)
+
+
 if __name__ == '__main__':
     # collect_reviews_product('sentiments.txt', 100, types=[1, 2, 3, 4])
     remove_duplicate_column('sentiments_v5.txt', 'comment')
