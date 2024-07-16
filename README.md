@@ -1,5 +1,7 @@
 # GetShopeeReviews
 
+This repository was discontinued because Shopee prevented APIs without authorization!
+
 | userid | mtime| rating_star | comment |
 | --- | --- | --- | --- |
 |69545822|20-05-2021 11:29:58|5|Đồ giống hình, nhìn khá xinh, giá rẻ, ship siêu nhanh luôn. Chưa dùng thử nên chưa biết thế nào|
